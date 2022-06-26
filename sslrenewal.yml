@@ -1,0 +1,127 @@
+---
+  - name: Cert Renewal
+    hosts: gns3
+    gather_facts: no
+    no_log: No
+    
+    tasks:
+
+      - name: Fetching ssl and key 
+        include_role:
+          name: nw_f5_fetch
+          
+      - name: Returncodes
+        block:
+          - name: Set link to documentation and name
+            include_role:
+              name: returncode
+              tasks_from: set_job_properties
+            vars:
+              asset_name: "ansible_nw_f5_playbooks"
+              documentation:
+              default: "https://github.kyndryl.net/Continuous-Engineering/ansible_nw_f5_playbooks"       
+            
+          - name: RETURN CODE GENERATION IN CASE OF MISCONFIG
+            include_role:
+              name: returncode
+            vars:
+              rc_support: account
+              rc_group: misconfiguration
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 301 or exec_rc == 302
+
+          - name: RETURN CODE GENERATION IN CASE OF EXECUTION FAILURE
+            include_role:
+              name: returncode
+            vars:
+              rc_support: developer
+              rc_group: component_playbook
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 304
+
+          
+
+          - name: RETURN CODE GENERATION IN CASE OF SUCCESS
+            include_role:
+              name: returncode
+            vars:
+              rc_success: true
+              rc_message: "SUCCESS"
+            when: exec_rc == 0
+
+          - name: RETURN CODE GENERATION IN CASE OF UNKNOWN FAILURE
+            include_role:
+              name: returncode
+            vars:
+              rc_support: developer
+              rc_group: framework_playbook
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 1                      
+    
+    
+  - name: Cert Renewal
+    hosts: lb
+    connection: local
+    gather_facts: no
+    no_log: No
+    
+    tasks:
+
+      - name: SSL Renewal 
+        include_role:
+          name: nw_f5_certrenewal
+            
+
+      - name: Returncodes
+        block:
+          - name: Set link to documentation and name
+            include_role:
+              name: returncode
+              tasks_from: set_job_properties
+            vars:
+              asset_name: "ansible_nw_f5_playbooks"
+              documentation:
+              default: "https://github.kyndryl.net/Continuous-Engineering/ansible_nw_f5_playbooks"       
+            
+          - name: RETURN CODE GENERATION IN CASE OF MISCONFIG
+            include_role:
+              name: returncode
+            vars:
+              rc_support: account
+              rc_group: misconfiguration
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 308 or exec_rc == 309
+
+          - name: RETURN CODE GENERATION IN CASE OF EXECUTION FAILURE
+            include_role:
+              name: returncode
+            vars:
+              rc_support: developer
+              rc_group: component_playbook
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 310
+
+          
+
+          - name: RETURN CODE GENERATION IN CASE OF SUCCESS
+            include_role:
+              name: returncode
+            vars:
+              rc_success: true
+              rc_message: "SUCCESS"
+            when: exec_rc == 0
+
+          - name: RETURN CODE GENERATION IN CASE OF UNKNOWN FAILURE
+            include_role:
+              name: returncode
+            vars:
+              rc_support: developer
+              rc_group: framework_playbook
+              rc_number: "{{ exec_rc }}"
+              rc_message: "{{ exec_message }}"
+            when: exec_rc == 1            
